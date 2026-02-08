@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SN Editor - Create Super Notation Documents</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            background: #1e1e1e;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .header h1 {
+            font-size: 1.5em;
+            font-weight: 600;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 6px;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-1px);
+        }
+
+        .btn-primary {
+            background: rgba(255,255,255,0.9);
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .btn-primary:hover {
+            background: white;
+        }
+
+        .toolbar {
+            background: #2d2d2d;
+            padding: 12px 20px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            border-bottom: 1px solid #444;
+            align-items: center;
+        }
+
+        .toolbar-btn {
+            padding: 6px 12px;
+            background: #3d3d3d;
+            color: #e0e0e0;
+            border: 1px solid #555;
+            border-radius: 4px;
+            font-size: 0.85em;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .toolbar-btn:hover {
+            background: #4d4d4d;
+            border-color: #667eea;
+        }
+
+        .toolbar-separator {
+            width: 1px;
+            height: 20px;
+            background: #555;
+            margin: 0 5px;
+        }
+
+        .main-container {
+            display: flex;
+            height: calc(100vh - 120px);
+        }
+
+        .editor-pane {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #1e1e1e;
+            border-right: 1px solid #444;
+        }
+
+        .preview-pane {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #f5f5f5;
+            overflow: hidden;
+        }
+
+        .pane-header {
+            padding: 10px 20px;
+            background: #2d2d2d;
+            color: #e0e0e0;
+            font-weight: 600;
+            border-bottom: 1px solid #444;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .preview-pane .pane-header {
+            background: #e0e0e0;
+            color: #333;
+            border-bottom: 1px solid #ccc;
+        }
+
+        #editor {
+            flex: 1;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #e0e0e0;
+            background: #1e1e1e;
+            border: none;
+            resize: none;
+            outline: none;
+        }
+
+        #preview {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+            background: white;
+        }
+
+        .status-bar {
+            background: #2d2d2d;
+            color: #888;
+            padding: 8px 20px;
+            font-size: 0.85em;
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid #444;
+        }
+
+        /* Preview Styles */
+        #preview h1 {
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        #preview h2 {
+            color: #34495e;
+            font-size: 1.8em;
+            margin: 30px 0 15px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #95a5a6;
+        }
+
+        #preview p {
+            line-height: 1.8;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+
+        #preview ul, #preview ol {
+            margin: 15px 0;
+            padding-left: 30px;
+        }
+
+        #preview li {
+            margin: 8px 0;
+            line-height: 1.6;
+        }
+
+        #preview pre {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        #preview hr {
+            border: none;
+            border-top: 2px solid #bdc3c7;
+            margin: 30px 0;
+        }
+
+        #preview img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        #preview a {
+            color: #667eea;
+            text-decoration: none;
+            border-bottom: 1px solid #667eea;
+        }
+
+        #preview a:hover {
+            color: #764ba2;
+            border-bottom-color: #764ba2;
+        }
+
+        .sealed-badge {
+            display: inline-block;
+            background: #27ae60;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .modal-content h2 {
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        .modal-content textarea,
+        .modal-content input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-family: inherit;
+            margin-bottom: 15px;
+        }
+
+        .modal-content textarea {
+            resize: vertical;
+            min-height: 100px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .modal-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.2s;
+        }
+
+        .modal-btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .modal-btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .modal-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .template-card {
+            padding: 15px;
+            background: #f5f5f5;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .template-card:hover {
+            border-color: #667eea;
+            background: #e8eaf6;
+        }
+
+        .template-card .emoji {
+            font-size: 2em;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+            }
+
+            .editor-pane, .preview-pane {
+                height: 50vh;
+            }
+
+            .toolbar {
+                overflow-x: auto;
+            }
+        }
+
+        /* Inline formatting preview */
+        .preview-bold { font-weight: bold; }
+        .preview-italic { font-style: italic; }
+        .preview-underline { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📝 SN Editor</h1>
+        <div class="header-actions">
+            <button class="btn" onclick="openTemplates()">📋 Templates</button>
+            <button class="btn" onclick="openFile()">📂 Open</button>
+            <button class="btn btn-primary" onclick="saveFile()">💾 Save</button>
+            <a href="sn-browser.html" class="btn" target="_blank">👁️ Browser</a>
+        </div>
+    </div>
+
+    <div class="toolbar">
+        <button class="toolbar-btn" onclick="insertCommand('meta')">🏷️ Meta</button>
+        <button class="toolbar-btn" onclick="insertCommand('title')">📌 Title</button>
+        <button class="toolbar-btn" onclick="insertCommand('sec')">📑 Section</button>
+        <button class="toolbar-btn" onclick="insertCommand('para')">¶ Paragraph</button>
+        <div class="toolbar-separator"></div>
+        <button class="toolbar-btn" onclick="insertCommand('olist-bullet')">• List</button>
+        <button class="toolbar-btn" onclick="insertCommand('olist-numbers')">1. Numbered</button>
+        <button class="toolbar-btn" onclick="insertCommand('code')">💻 Code</button>
+        <div class="toolbar-separator"></div>
+        <button class="toolbar-btn" onclick="insertCommand('bold')">B</button>
+        <button class="toolbar-btn" onclick="insertCommand('italic')">I</button>
+        <button class="toolbar-btn" onclick="insertCommand('underline')">U</button>
+        <button class="toolbar-btn" onclick="insertCommand('color')">🎨 Color</button>
+        <div class="toolbar-separator"></div>
+        <button class="toolbar-btn" onclick="insertCommand('link')">🔗 Link</button>
+        <button class="toolbar-btn" onclick="insertCommand('image')">🖼️ Image</button>
+        <button class="toolbar-btn" onclick="insertCommand('break')">─ Break</button>
+    </div>
+
+    <div class="main-container">
+        <div class="editor-pane">
+            <div class="pane-header">
+                <span>Editor</span>
+                <span style="font-weight: normal; font-size: 0.85em;">Type your SN document...</span>
+            </div>
+            <textarea id="editor" spellcheck="false" placeholder="Start typing your Super Notation document here...
+
+Example:
+<super-notation-v1>
+
+meta: author=Your Name
+meta: version=1.0
+title: My First Document
+
+sec:intro
+para: Welcome to {b:Super Notation}!
+
+"></textarea>
+        </div>
+
+        <div class="preview-pane">
+            <div class="pane-header">
+                <span>Live Preview</span>
+                <span id="preview-status" style="font-weight: normal; font-size: 0.85em;">Ready</span>
+            </div>
+            <div id="preview">
+                <p style="text-align: center; color: #999; padding: 40px;">
+                    Start typing in the editor to see live preview...
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="status-bar">
+        <span id="status-left">Ready</span>
+        <span id="status-right">Lines: 0 | Characters: 0</span>
+    </div>
+
+    <!-- Templates Modal -->
+    <div id="templates-modal" class="modal">
+        <div class="modal-content">
+            <h2>📋 Choose a Template</h2>
+            <div class="template-grid">
+                <div class="template-card" onclick="loadTemplate('blank')">
+                    <span class="emoji">📄</span>
+                    <div>Blank</div>
+                </div>
+                <div class="template-card" onclick="loadTemplate('documentation')">
+                    <span class="emoji">📚</span>
+                    <div>Documentation</div>
+                </div>
+                <div class="template-card" onclick="loadTemplate('tutorial')">
+                    <span class="emoji">🎓</span>
+                    <div>Tutorial</div>
+                </div>
+                <div class="template-card" onclick="loadTemplate('guide')">
+                    <span class="emoji">🗺️</span>
+                    <div>Guide</div>
+                </div>
+                <div class="template-card" onclick="loadTemplate('manual')">
+                    <span class="emoji">📖</span>
+                    <div>Manual</div>
+                </div>
+                <div class="template-card" onclick="loadTemplate('reference')">
+                    <span class="emoji">📑</span>
+                    <div>Reference</div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-secondary" onclick="closeTemplates()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- File input (hidden) -->
+    <input type="file" id="file-input" accept=".sn" style="display: none;">
+
+    <script>
+        const editor = document.getElementById('editor');
+        const preview = document.getElementById('preview');
+        const statusLeft = document.getElementById('status-left');
+        const statusRight = document.getElementById('status-right');
+        const previewStatus = document.getElementById('preview-status');
+
+        let currentFileName = 'untitled.sn';
+        let isDirty = false;
+
+        // Update preview on typing
+        editor.addEventListener('input', () => {
+            updatePreview();
+            updateStatus();
+            isDirty = true;
+        });
+
+        function updatePreview() {
+            const content = editor.value;
+            const rendered = parseAndRender(content);
+            preview.innerHTML = rendered;
+            previewStatus.textContent = 'Updated ' + new Date().toLocaleTimeString();
+        }
+
+        function updateStatus() {
+            const content = editor.value;
+            const lines = content.split('\n').length;
+            const chars = content.length;
+            statusRight.textContent = `Lines: ${lines} | Characters: ${chars}`;
+            
+            if (isDirty) {
+                statusLeft.textContent = '● Modified';
+            }
+        }
+
+        function parseAndRender(content) {
+            const lines = content.split('\n');
+            let html = '';
+            let inCodeBlock = false;
+            let codeContent = '';
+            let inList = false;
+            let listItems = [];
+            let listType = 'bullet';
+
+            for (let line of lines) {
+                const trimmed = line.trim();
+                
+                // Skip comments
+                if (trimmed.startsWith('#')) continue;
+                
+                // Handle code blocks
+                if (trimmed === 'code:') {
+                    inCodeBlock = true;
+                    codeContent = '';
+                    continue;
+                }
+                
+                if (trimmed === 'endcode:') {
+                    inCodeBlock = false;
+                    html += `<pre>${escapeHtml(codeContent)}</pre>`;
+                    codeContent = '';
+                    continue;
+                }
+                
+                if (inCodeBlock) {
+                    codeContent += line + '\n';
+                    continue;
+                }
+
+                // Handle list end
+                if (inList && (trimmed === '' || trimmed.includes(':'))) {
+                    html += renderList(listItems, listType);
+                    inList = false;
+                    listItems = [];
+                }
+
+                // Skip declaration and meta
+                if (trimmed.startsWith('<super-notation-v1>')) continue;
+                if (trimmed.startsWith('meta:')) continue;
+                if (trimmed.startsWith('sign:')) {
+                    html += '<div style="margin-top: 30px; padding: 15px; background: #e8f5e9; border-left: 4px solid #4caf50; border-radius: 4px;">';
+                    html += '<strong>🔒 Document Sealed</strong><br>';
+                    html += `<code style="font-size: 0.85em;">${escapeHtml(trimmed)}</code>`;
+                    html += '</div>';
+                    continue;
+                }
+                if (trimmed === 'close:') continue;
+
+                // Title
+                if (trimmed.startsWith('title:')) {
+                    const title = trimmed.substring(6).trim();
+                    html += `<h1>${processInline(title)}</h1>`;
+                    continue;
+                }
+
+                // Section
+                if (trimmed.startsWith('sec:')) {
+                    const secId = trimmed.substring(4).trim();
+                    html += `<h2 id="${secId}">${secId.replace(/-/g, ' ').replace(/_/g, ' ')}</h2>`;
+                    continue;
+                }
+
+                // Section link
+                if (trimmed.match(/^sec=.+:/)) {
+                    const match = trimmed.match(/^sec=(.+?):\s*(.+)$/);
+                    if (match) {
+                        html += `<p><a href="#${match[1]}">${processInline(match[2])}</a></p>`;
+                    }
+                    continue;
+                }
+
+                // Paragraph
+                if (trimmed.startsWith('para:')) {
+                    const text = trimmed.substring(5).trim();
+                    html += `<p>${processInline(text)}</p>`;
+                    continue;
+                }
+
+                // Break line
+                if (trimmed.startsWith('break-line')) {
+                    html += '<hr>';
+                    continue;
+                }
+
+                // List start
+                if (trimmed.startsWith('olist:bullet') || trimmed.startsWith('olist:numbers')) {
+                    inList = true;
+                    listType = trimmed.includes('numbers') ? 'numbers' : 'bullet';
+                    listItems = [];
+                    continue;
+                }
+
+                // List items
+                if (inList && trimmed !== '') {
+                    listItems.push(trimmed);
+                    continue;
+                }
+
+                // Link
+                if (trimmed.startsWith('link:')) {
+                    const url = trimmed.substring(5).trim();
+                    html += `<p><a href="${url}" target="_blank">${url}</a></p>`;
+                    continue;
+                }
+
+                // Link with text
+                if (trimmed.startsWith('linktxt:')) {
+                    const rest = trimmed.substring(8).trim();
+                    const parts = rest.split('|').length > 1 ? rest.split('|') : rest.split(':');
+                    if (parts.length === 2) {
+                        html += `<p><a href="${parts[1].trim()}" target="_blank">${processInline(parts[0].trim())}</a></p>`;
+                    }
+                    continue;
+                }
+
+                // Image
+                if (trimmed.startsWith('img:=')) {
+                    const rest = trimmed.substring(5).trim();
+                    const parts = rest.split('|');
+                    const src = parts[0].trim();
+                    const alt = parts.length > 1 ? parts[1].trim() : '';
+                    html += `<img src="${src}" alt="${alt}">`;
+                    continue;
+                }
+            }
+
+            // Handle any remaining list
+            if (inList && listItems.length > 0) {
+                html += renderList(listItems, listType);
+            }
+
+            return html || '<p style="text-align: center; color: #999; padding: 40px;">Start typing in the editor to see live preview...</p>';
+        }
+
+        function renderList(items, type) {
+            const tag = type === 'numbers' ? 'ol' : 'ul';
+            let html = `<${tag}>`;
+            for (let item of items) {
+                html += `<li>${processInline(item)}</li>`;
+            }
+            html += `</${tag}>`;
+            return html;
+        }
+
+        function processInline(text) {
+            // Bold
+            text = text.replace(/\{b:([^}]+)\}/g, '<strong>$1</strong>');
+            text = text.replace(/\{bold:([^}]+)\}/g, '<strong>$1</strong>');
+            
+            // Italic
+            text = text.replace(/\{i:([^}]+)\}/g, '<em>$1</em>');
+            text = text.replace(/\{italic:([^}]+)\}/g, '<em>$1</em>');
+            
+            // Underline
+            text = text.replace(/\{u:([^}]+)\}/g, '<u>$1</u>');
+            
+            // Color
+            text = text.replace(/\{color=([^:]+):([^}]+)\}/g, '<span style="color: $1">$2</span>');
+            
+            // Escaped braces
+            text = text.replace(/\{\{/g, '{').replace(/\}\}/g, '}');
+            
+            return text;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function insertCommand(type) {
+            const cursorPos = editor.selectionStart;
+            const textBefore = editor.value.substring(0, cursorPos);
+            const textAfter = editor.value.substring(editor.selectionEnd);
+            let insertion = '';
+            let cursorOffset = 0;
+
+            switch(type) {
+                case 'meta':
+                    insertion = 'meta: author=Your Name\n';
+                    cursorOffset = insertion.length;
+                    break;
+                case 'title':
+                    insertion = 'title: Document Title\n';
+                    cursorOffset = 7;
+                    break;
+                case 'sec':
+                    insertion = 'sec:section-id\n';
+                    cursorOffset = 4;
+                    break;
+                case 'para':
+                    insertion = 'para: Your paragraph text here.\n';
+                    cursorOffset = 6;
+                    break;
+                case 'olist-bullet':
+                    insertion = 'olist:bullet\nFirst item\nSecond item\nThird item\n\n';
+                    cursorOffset = 13;
+                    break;
+                case 'olist-numbers':
+                    insertion = 'olist:numbers\nFirst item\nSecond item\nThird item\n\n';
+                    cursorOffset = 14;
+                    break;
+                case 'code':
+                    insertion = 'code:\n# Your code here\nendcode:\n';
+                    cursorOffset = 6;
+                    break;
+                case 'bold':
+                    insertion = '{b:bold text}';
+                    cursorOffset = 3;
+                    break;
+                case 'italic':
+                    insertion = '{i:italic text}';
+                    cursorOffset = 3;
+                    break;
+                case 'underline':
+                    insertion = '{u:underlined text}';
+                    cursorOffset = 3;
+                    break;
+                case 'color':
+                    insertion = '{color=#ff0000:colored text}';
+                    cursorOffset = 14;
+                    break;
+                case 'link':
+                    insertion = 'link: https://example.com\n';
+                    cursorOffset = 6;
+                    break;
+                case 'image':
+                    insertion = 'img:=path/to/image.png | Alt text\n';
+                    cursorOffset = 5;
+                    break;
+                case 'break':
+                    insertion = 'break-line\n';
+                    cursorOffset = insertion.length;
+                    break;
+            }
+
+            editor.value = textBefore + insertion + textAfter;
+            editor.focus();
+            editor.setSelectionRange(cursorPos + cursorOffset, cursorPos + cursorOffset);
+            updatePreview();
+            updateStatus();
+        }
+
+        function openTemplates() {
+            document.getElementById('templates-modal').style.display = 'flex';
+        }
+
+        function closeTemplates() {
+            document.getElementById('templates-modal').style.display = 'none';
+        }
+
+        function loadTemplate(type) {
+            let template = '';
+            
+            switch(type) {
+                case 'blank':
+                    template = `<super-notation-v1>
+
+meta: author=Your Name
+meta: version=1.0
+meta: date=${new Date().toISOString().split('T')[0]}
+
+title: Untitled Document
+
+sec:introduction
+para: Start writing your document here.
+
+`;
+                    break;
+                    
+                case 'documentation':
+                    template = `<super-notation-v1>
+
+meta: author=Your Name
+meta: version=1.0
+meta: date=${new Date().toISOString().split('T')[0]}
+meta: project=My Project
+
+title: Project Documentation
+
+sec:overview
+para: Brief overview of the project and its purpose.
+
+sec:getting-started
+para: Instructions for getting started.
+
+olist:numbers
+Install dependencies
+Configure settings
+Run the application
+
+sec:features
+para: Key features of this project:
+
+olist:bullet
+Feature one
+Feature two
+Feature three
+
+sec:examples
+para: Code examples:
+
+code:
+# Example code here
+function example() {
+    return "Hello World";
+}
+endcode:
+
+sec:support
+para: For support, contact us at {b:support@example.com}.
+`;
+                    break;
+                    
+                case 'tutorial':
+                    template = `<super-notation-v1>
+
+meta: author=Your Name
+meta: version=1.0
+meta: difficulty=Beginner
+
+title: Tutorial: Getting Started
+
+sec:introduction
+para: Welcome to this tutorial! You will learn how to use {b:Super Notation} effectively.
+
+sec:prerequisites
+para: Before starting, make sure you have:
+
+olist:bullet
+Basic text editing knowledge
+A text editor
+The SN Browser
+
+sec:lesson-1
+para: {b:Lesson 1: Creating Your First Document}
+
+para: Follow these steps:
+
+olist:numbers
+Open your text editor
+Create a new file
+Save it as {i:tutorial.sn}
+Add the SN declaration
+
+code:
+<super-notation-v1>
+title: My First Document
+endcode:
+
+sec:lesson-2
+para: {b:Lesson 2: Adding Content}
+
+para: Learn how to add paragraphs, lists, and formatting.
+
+sec:conclusion
+para: Congratulations! You've completed the tutorial.
+`;
+                    break;
+                    
+                case 'guide':
+                    template = `<super-notation-v1>
+
+meta: author=Your Name
+meta: version=1.0
+meta: guide-type=Quick Start
+
+title: Quick Start Guide
+
+sec:step-1
+para: {b:Step 1: Installation}
+
+para: Download and install the required software.
+
+sec:step-2
+para: {b:Step 2: Configuration}
+
+para: Configure your environment with these settings:
+
+code:
+setting1=value1
+setting2=value2
+endcode:
+
+sec:step-3
+para: {b:Step 3: First Run}
+
+para: Run your first command:
+
+code:
+$ myapp --help
+endcode:
+
+sec:troubleshooting
+para: {b:Common Issues}
+
+para: If you encounter problems, check these solutions.
+
+sec:next-steps
+para: Continue to the full documentation for advanced topics.
+`;
+                    break;
+                    
+                case 'manual':
+                    template = `<super-notation-v1>
+
+meta: author=Your Name
+meta: version=1.0
+meta: manual-type=User Manual
+
+title: User Manual
+
+sec:introduction
+para: This manual provides comprehensive information about using the product.
+
+sec:installation
+para: {b:Installation Instructions}
+
+olist:numbers
+Download the installer
+Run the installation wizard
+Follow the on-screen prompts
+Complete the installation
+
+sec:basic-usage
+para: {b:Basic Usage}
+
+para: To use the product, follow these steps.
+
+sec:advanced-features
+para: {b:Advanced Features}
+
+para: Advanced users can access additional functionality.
+
+sec:configuration
+para: {b:Configuration Options}
+
+para: Available configuration parameters:
+
+olist:bullet
+Option 1: Description
+Option 2: Description
+Option 3: Description
+
+sec:maintenance
+para: {b:Maintenance and Updates}
+
+para: Keep your software up to date by checking for updates regularly.
+
+sec:support
+para: {b:Support}
+
+para: For technical support, visit our website or contact support.
+`;
+                    break;
+                    
+                case 'reference':
+                    template = `<super-notation-v1>
+
+meta: author=Your Name
+meta: version=1.0
+meta: doc-type=API Reference
+
+title: API Reference
+
+sec:overview
+para: Complete API reference documentation.
+
+sec:authentication
+para: {b:Authentication}
+
+code:
+API-Key: your-api-key-here
+Authorization: Bearer <token>
+endcode:
+
+sec:endpoints
+para: {b:Available Endpoints}
+
+para: {u:GET /api/users}
+
+para: Returns a list of users.
+
+code:
+GET https://api.example.com/users
+endcode:
+
+para: {u:POST /api/users}
+
+para: Creates a new user.
+
+code:
+POST https://api.example.com/users
+{
+  "name": "John Doe",
+  "email": "john@example.com"
+}
+endcode:
+
+sec:error-codes
+para: {b:Error Codes}
+
+olist:bullet
+200 - Success
+400 - Bad Request
+401 - Unauthorized
+404 - Not Found
+500 - Server Error
+
+sec:examples
+para: {b:Example Usage}
+
+code:
+curl -X GET https://api.example.com/users \\
+  -H "API-Key: your-key"
+endcode:
+`;
+                    break;
+            }
+            
+            editor.value = template;
+            updatePreview();
+            updateStatus();
+            isDirty = true;
+            currentFileName = 'untitled.sn';
+            closeTemplates();
+            statusLeft.textContent = 'Template loaded';
+        }
+
+        function saveFile() {
+            const content = editor.value;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = currentFileName;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            isDirty = false;
+            statusLeft.textContent = `Saved as ${currentFileName}`;
+            
+            setTimeout(() => {
+                statusLeft.textContent = 'Ready';
+            }, 3000);
+        }
+
+        function openFile() {
+            const input = document.getElementById('file-input');
+            input.click();
+        }
+
+        document.getElementById('file-input').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                currentFileName = file.name;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    editor.value = e.target.result;
+                    updatePreview();
+                    updateStatus();
+                    isDirty = false;
+                    statusLeft.textContent = `Opened ${currentFileName}`;
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        // Keyboard shortcuts
+        editor.addEventListener('keydown', (e) => {
+            // Ctrl+S / Cmd+S to save
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                saveFile();
+            }
+            
+            // Ctrl+O / Cmd+O to open
+            if ((e.ctrlKey || e.metaKey) && e.key === 'o') {
+                e.preventDefault();
+                openFile();
+            }
+
+            // Tab key support
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                const start = editor.selectionStart;
+                const end = editor.selectionEnd;
+                editor.value = editor.value.substring(0, start) + '    ' + editor.value.substring(end);
+                editor.selectionStart = editor.selectionEnd = start + 4;
+            }
+        });
+
+        // Warn before closing if unsaved
+        window.addEventListener('beforeunload', (e) => {
+            if (isDirty) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+
+        // Initial status update
+        updateStatus();
+    </script>
+</body>
+</html>

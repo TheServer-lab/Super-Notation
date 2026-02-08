@@ -1,0 +1,58 @@
+<super-notation-v1>
+
+meta: author=Jane Doe
+meta: version=1.0
+meta: date=2026-02-09
+
+title: Getting Started with Super Notation
+
+sec:introduction
+para: Welcome to {b:Super Notation}, a human-first documentation format designed for clarity and simplicity.
+
+para: This guide will help you understand the basics of writing SN documents.
+
+sec:basic-syntax
+para: SN uses simple keywords followed by colons. Here are some examples:
+
+olist:bullet
+Paragraphs start with para:
+Sections start with sec:
+Code blocks use code: and endcode:
+Lists use olist:bullet or olist:numbers
+
+sec:formatting
+para: You can use inline formatting like {bold:bold text}, {italic:italic text}, and {u:underlined text}.
+
+para: You can even use {color=#ff0000:colored text}!
+
+sec:code-example
+para: Here's a simple code example:
+
+code:
+def hello_world():
+    print("Hello, Super Notation!")
+    
+if __name__ == "__main__":
+    hello_world()
+endcode:
+
+sec:lists
+para: Both ordered and unordered lists are supported.
+
+para: An ordered list:
+
+olist:numbers
+First item
+Second item
+Third item
+
+para: An unordered list:
+
+olist:bullet
+Apples
+Bananas
+Cherries
+
+break-line
+
+para: For more examples, check out the specification document.

@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SN Browser Demo - Try It Now!</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            padding: 40px 20px;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.95;
+            margin-bottom: 10px;
+        }
+
+        .demo-section {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .demo-section h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin: 25px 0;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .code-example {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 25px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .feature-card h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+
+        .feature-card p {
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .emoji {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .warning-box {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        iframe {
+            width: 100%;
+            height: 600px;
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .demo-section {
+                padding: 25px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📖 Super Notation Browser Demo</h1>
+            <p>A beautiful web-based viewer for SN v1.0 documentation files</p>
+            <p style="font-size: 0.9em; margin-top: 10px;">Scroll down to try it live! ⬇️</p>
+        </div>
+
+        <div class="demo-section">
+            <h2>🚀 Quick Start</h2>
+            <p>The SN Browser is a single HTML file that runs entirely in your browser. No installation, no dependencies, no servers required!</p>
+
+            <div class="button-group">
+                <a href="sn-browser.html" class="btn" target="_blank">
+                    🌐 Open SN Browser
+                </a>
+                <button class="btn btn-secondary" onclick="scrollToDemo()">
+                    ▶️ Try Live Demo Below
+                </button>
+                <a href="SN-BROWSER-README.md" class="btn btn-success" target="_blank">
+                    📚 Read Documentation
+                </a>
+            </div>
+
+            <div class="info-box">
+                <strong>💡 Pro Tip:</strong> Bookmark the SN Browser page for instant access to your documentation files anytime!
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>✨ Features</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <span class="emoji">📁</span>
+                    <h3>File Upload</h3>
+                    <p>Drag & drop or select .sn files from your computer</p>
+                </div>
+                <div class="feature-card">
+                    <span class="emoji">🔗</span>
+                    <h3>URL Loading</h3>
+                    <p>Load documents from any accessible URL</p>
+                </div>
+                <div class="feature-card">
+                    <span class="emoji">🎨</span>
+                    <h3>Beautiful Design</h3>
+                    <p>Modern, responsive interface that works everywhere</p>
+                </div>
+                <div class="feature-card">
+                    <span class="emoji">⚡</span>
+                    <h3>Zero Setup</h3>
+                    <p>Single HTML file, works offline, no dependencies</p>
+                </div>
+                <div class="feature-card">
+                    <span class="emoji">🔒</span>
+                    <h3>Signature Display</h3>
+                    <p>Shows when documents are sealed and signed</p>
+                </div>
+                <div class="feature-card">
+                    <span class="emoji">📱</span>
+                    <h3>Mobile Ready</h3>
+                    <p>Perfect reading experience on all devices</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>📝 Sample SN Document</h2>
+            <p>Here's a sample Super Notation document you can try loading:</p>
+
+            <div class="code-example">&lt;super-notation-v1&gt;
+
+meta: author=Demo Author
+meta: version=1.0
+meta: date=2026-02-09
+
+title: Super Notation Demo Document
+
+sec:introduction
+para: Welcome to {b:Super Notation}! This is a human-first, machine-friendly documentation format.
+
+para: It supports {i:inline formatting}, {u:underlined text}, and even {color=#ff0000:colored text}!
+
+sec:features
+para: Here are some key features:
+
+olist:bullet
+Simple, readable syntax
+Beautiful HTML rendering
+Code blocks with syntax preservation
+Multi-file documentation flows
+Cryptographic document signing
+
+sec:code-example
+para: Code blocks are easy to include:
+
+code:
+def greet(name):
+    return f"Hello, {name}!"
+
+print(greet("Super Notation"))
+endcode:
+
+sec:lists
+para: Both ordered and unordered lists are supported:
+
+olist:numbers
+First item
+Second item
+Third item
+
+break-line
+
+para: Try uploading this as a .sn file in the browser below!</div>
+
+            <button class="btn" onclick="copyToClipboard()">📋 Copy Sample Document</button>
+        </div>
+
+        <div class="demo-section" id="live-demo">
+            <h2>🎮 Live Demo</h2>
+            <p>Try the SN Browser right here! Upload the sample document above or try your own .sn files.</p>
+
+            <div class="warning-box">
+                <strong>⚠️ Note:</strong> Due to iframe restrictions, URL loading may not work in this embedded demo. Download the browser file for full functionality!
+            </div>
+
+            <iframe src="sn-browser.html"></iframe>
+        </div>
+
+        <div class="demo-section">
+            <h2>🛠️ How to Use</h2>
+            
+            <h3 style="margin: 20px 0 10px 0;">Method 1: Upload a File</h3>
+            <ol style="line-height: 2; margin-left: 30px;">
+                <li>Copy the sample document above</li>
+                <li>Save it as <code>demo.sn</code> on your computer</li>
+                <li>Click "Choose File" in the browser</li>
+                <li>Select your <code>demo.sn</code> file</li>
+                <li>See it rendered beautifully! ✨</li>
+            </ol>
+
+            <h3 style="margin: 30px 0 10px 0;">Method 2: Load from URL</h3>
+            <ol style="line-height: 2; margin-left: 30px;">
+                <li>Host your .sn file on a public server</li>
+                <li>Copy the URL</li>
+                <li>Paste it in the URL field</li>
+                <li>Click "Load" or press Enter</li>
+                <li>Document loads and renders! 🎉</li>
+            </ol>
+        </div>
+
+        <div class="demo-section">
+            <h2>📦 Download & Deploy</h2>
+            <p>The SN Browser is just one HTML file. You can:</p>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <span class="emoji">💾</span>
+                    <h3>Download</h3>
+                    <p>Save sn-browser.html to your computer</p>
+                </div>
+                <div class="feature-card">
+                    <span class="emoji">🌍</span>
+                    <h3>Host Online</h3>
+                    <p>Upload to GitHub Pages, Netlify, or any static host</p>
+                </div>
+                <div class="feature-card">
+                    <span class="emoji">📂</span>
+                    <h3>Bundle</h3>
+                    <p>Include it with your documentation files</p>
+                </div>
+                <div class="feature-card">
+                    <span class="emoji">🔌</span>
+                    <h3>Use Offline</h3>
+                    <p>Works perfectly without internet</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>🎓 Learn More</h2>
+            <div class="button-group">
+                <a href="README.md" class="btn" target="_blank">
+                    📖 Full Documentation
+                </a>
+                <a href="QUICKSTART.md" class="btn btn-secondary" target="_blank">
+                    🚀 Quick Start Guide
+                </a>
+                <a href="PROJECT_SUMMARY.md" class="btn btn-success" target="_blank">
+                    📊 Project Summary
+                </a>
+            </div>
+        </div>
+
+        <div class="demo-section" style="text-align: center; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);">
+            <h2 style="margin-bottom: 15px;">Ready to Get Started?</h2>
+            <p style="font-size: 1.1em; margin-bottom: 25px; color: #555;">
+                Open the SN Browser and start viewing your documentation!
+            </p>
+            <a href="sn-browser.html" class="btn" target="_blank" style="font-size: 1.2em; padding: 18px 40px;">
+                🚀 Launch SN Browser
+            </a>
+        </div>
+
+        <div style="text-align: center; color: white; padding: 30px 20px; opacity: 0.8;">
+            <p>Made with ❤️ for Super Notation v1.0</p>
+            <p style="font-size: 0.9em; margin-top: 10px;">A human-first documentation format</p>
+        </div>
+    </div>
+
+    <script>
+        function scrollToDemo() {
+            document.getElementById('live-demo').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function copyToClipboard() {
+            const text = document.querySelector('.code-example').textContent;
+            
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => {
+                    alert('✅ Sample document copied to clipboard!\n\nNow:\n1. Create a new file named "demo.sn"\n2. Paste the content\n3. Upload it in the browser below!');
+                }).catch(err => {
+                    fallbackCopy(text);
+                });
+            } else {
+                fallbackCopy(text);
+            }
+        }
+
+        function fallbackCopy(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            
+            try {
+                document.execCommand('copy');
+                alert('✅ Sample document copied to clipboard!\n\nNow:\n1. Create a new file named "demo.sn"\n2. Paste the content\n3. Upload it in the browser below!');
+            } catch (err) {
+                alert('❌ Could not copy automatically. Please select and copy the text manually.');
+            }
+            
+            document.body.removeChild(textarea);
+        }
+    </script>
+</body>
+</html>

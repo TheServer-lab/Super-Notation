@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Notation Browser</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            padding: 30px 20px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .input-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .input-section {
+            margin-bottom: 25px;
+        }
+
+        .input-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .input-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-section h3::before {
+            content: "📄";
+            font-size: 1.3em;
+        }
+
+        .input-section:nth-child(2) h3::before {
+            content: "🔗";
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 15px 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .file-input-label:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .url-input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px 18px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .divider {
+            text-align: center;
+            margin: 25px 0;
+            color: #999;
+            position: relative;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 45%;
+            height: 1px;
+            background: #e0e0e0;
+        }
+
+        .divider::before {
+            left: 0;
+        }
+
+        .divider::after {
+            right: 0;
+        }
+
+        .document-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            min-height: 400px;
+        }
+
+        .document-panel.hidden {
+            display: none;
+        }
+
+        .status-message {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .status-message.info {
+            background: #e3f2fd;
+            color: #1976d2;
+            border-left: 4px solid #1976d2;
+            display: block;
+        }
+
+        .status-message.success {
+            background: #e8f5e9;
+            color: #388e3c;
+            border-left: 4px solid #388e3c;
+            display: block;
+        }
+
+        .status-message.error {
+            background: #ffebee;
+            color: #c62828;
+            border-left: 4px solid #c62828;
+            display: block;
+        }
+
+        .status-message.warning {
+            background: #fff3e0;
+            color: #f57c00;
+            border-left: 4px solid #f57c00;
+            display: block;
+        }
+
+        /* Rendered SN Content Styles */
+        .sn-content {
+            line-height: 1.8;
+        }
+
+        .sn-title {
+            color: #2c3e50;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+            font-size: 2.2em;
+        }
+
+        .sn-section {
+            color: #34495e;
+            margin-top: 2.5em;
+            margin-bottom: 1em;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 8px;
+            font-size: 1.8em;
+        }
+
+        .sn-para {
+            margin: 1.2em 0;
+            text-align: justify;
+            color: #333;
+            font-size: 1.05em;
+        }
+
+        .sn-break {
+            margin: 2.5em 0;
+            border: none;
+            border-top: 2px solid #bdc3c7;
+        }
+
+        .sn-list {
+            margin: 1.2em 0;
+            padding-left: 2.5em;
+        }
+
+        .sn-list li {
+            margin: 0.7em 0;
+            color: #333;
+        }
+
+        .sn-code {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95em;
+            margin: 1.5em 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .sn-code code {
+            background: none;
+            color: inherit;
+        }
+
+        .sn-image {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 1.5em 0;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .sn-link, .sn-opensn {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .sn-link:hover, .sn-opensn:hover {
+            text-decoration: underline;
+        }
+
+        .sn-next {
+            margin-top: 3em;
+            padding: 20px;
+            background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+            border-left: 4px solid #667eea;
+            border-radius: 8px;
+        }
+
+        .sn-next a {
+            color: #2c3e50;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .sn-seal {
+            margin-top: 3em;
+            padding: 20px;
+            background: linear-gradient(135deg, #d5f4e6 0%, #c8e6c9 100%);
+            border: 2px solid #27ae60;
+            border-radius: 8px;
+            text-align: center;
+            color: #27ae60;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .sn-unknown {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px;
+            margin: 1em 0;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+
+        .metadata-panel {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border-left: 4px solid #667eea;
+        }
+
+        .metadata-panel h4 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .metadata-item {
+            color: #666;
+            margin: 5px 0;
+            font-size: 0.95em;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .loading::before {
+            content: "⏳";
+            font-size: 3em;
+            display: block;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .input-panel,
+            .document-panel {
+                padding: 20px;
+            }
+
+            .url-input-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📖 Super Notation Browser</h1>
+            <p>View and read Super Notation (SN v1.0) documents in your browser</p>
+        </div>
+
+        <div class="input-panel">
+            <div class="input-section">
+                <h3>Upload SN File</h3>
+                <div class="file-input-wrapper">
+                    <label for="fileInput" class="file-input-label">
+                        <span>📁</span>
+                        <span id="fileLabel">Choose File</span>
+                    </label>
+                    <input type="file" id="fileInput" accept=".sn">
+                </div>
+            </div>
+
+            <div class="divider">OR</div>
+
+            <div class="input-section">
+                <h3>Load from URL</h3>
+                <div class="url-input-group">
+                    <input type="text" id="urlInput" placeholder="Enter URL to .sn file...">
+                    <button onclick="loadFromUrl()">Load</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="document-panel" id="documentPanel">
+            <div class="status-message info">
+                <strong>Welcome!</strong> Upload an SN file or enter a URL to get started.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // SN Parser in JavaScript
+        class SNParser {
+            constructor() {
+                this.lines = [];
+                this.currentLine = 0;
+                this.metadata = [];
+                this.nodes = [];
+            }
+
+            parse(content) {
+                this.lines = content.split('\n');
+                this.currentLine = 0;
+                this.metadata = [];
+                this.nodes = [];
+
+                // Parse header
+                if (!this.parseHeader()) {
+                    throw new Error('Missing or invalid <super-notation-v1> header');
+                }
+
+                // Parse metadata
+                this.metadata = this.parseMetadata();
+
+                // Parse body
+                while (this.hasMore()) {
+                    const node = this.parseNode();
+                    if (node) {
+                        this.nodes.push(node);
+                    }
+                }
+
+                return {
+                    metadata: this.metadata,
+                    nodes: this.nodes
+                };
+            }
+
+            hasMore() {
+                return this.currentLine < this.lines.length;
+            }
+
+            peekLine() {
+                if (this.currentLine < this.lines.length) {
+                    return this.lines[this.currentLine];
+                }
+                return null;
+            }
+
+            consumeLine() {
+                const line = this.peekLine();
+                if (line !== null) {
+                    this.currentLine++;
+                }
+                return line;
+            }
+
+            isComment(line) {
+                return line.trim().startsWith('#');
+            }
+
+            isBlank(line) {
+                return line.trim() === '';
+            }
+
+            parseHeader() {
+                while (this.hasMore()) {
+                    const line = this.peekLine();
+                    if (this.isBlank(line) || this.isComment(line)) {
+                        this.consumeLine();
+                        continue;
+                    }
+
+                    if (line.trim() === '<super-notation-v1>') {
+                        this.consumeLine();
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+                return false;
+            }
+
+            parseMetadata() {
+                const metadata = [];
+                while (this.hasMore()) {
+                    const line = this.peekLine();
+                    
+                    if (this.isBlank(line) || this.isComment(line)) {
+                        this.consumeLine();
+                        continue;
+                    }
+
+                    const stripped = line.trim();
+                    if (stripped.toLowerCase().startsWith('meta:')) {
+                        this.consumeLine();
+                        const content = stripped.substring(5).trim();
+                        metadata.push({ type: 'meta', content });
+                    } else {
+                        break;
+                    }
+                }
+                return metadata;
+            }
+
+            parseNode() {
+                const line = this.peekLine();
+
+                if (!line) return null;
+
+                if (this.isBlank(line) || this.isComment(line)) {
+                    this.consumeLine();
+                    return null;
+                }
+
+                const stripped = line.trim();
+                const lower = stripped.toLowerCase();
+
+                // Title
+                if (lower.startsWith('title:')) {
+                    this.consumeLine();
+                    return { type: 'title', text: stripped.substring(6).trim() };
+                }
+
+                // Section definition
+                if (lower.startsWith('sec:') && !stripped.includes('=')) {
+                    this.consumeLine();
+                    return { type: 'section', id: stripped.substring(4).trim() };
+                }
+
+                // Section link
+                if (lower.startsWith('sec=')) {
+                    this.consumeLine();
+                    const match = stripped.match(/sec=([^:]+):\s*(.*)/i);
+                    if (match) {
+                        return { type: 'section-link', id: match[1].trim(), text: match[2].trim() };
+                    }
+                }
+
+                // Paragraph
+                if (lower.startsWith('para:')) {
+                    this.consumeLine();
+                    return { type: 'para', text: stripped.substring(5).trim() };
+                }
+
+                // Break line
+                if (lower === 'break-line' || lower === 'break-line:') {
+                    this.consumeLine();
+                    return { type: 'break' };
+                }
+
+                // List
+                if (lower.startsWith('olist:')) {
+                    return this.parseList(stripped);
+                }
+
+                // Code block
+                if (lower === 'code:') {
+                    return this.parseCodeBlock();
+                }
+
+                // Image
+                if (lower.startsWith('img:=')) {
+                    this.consumeLine();
+                    return this.parseImage(stripped.substring(5));
+                }
+
+                // Links
+                if (lower.startsWith('link:')) {
+                    this.consumeLine();
+                    return { type: 'link', url: stripped.substring(5).trim() };
+                }
+
+                if (lower.startsWith('linktxt:')) {
+                    this.consumeLine();
+                    return this.parseLinkText(stripped.substring(8));
+                }
+
+                // Cross-file navigation
+                if (lower.startsWith('opensn=')) {
+                    this.consumeLine();
+                    const match = stripped.match(/opensn=([^:]+):\s*(.*)/i);
+                    if (match) {
+                        return { type: 'opensn', location: match[1].trim(), text: match[2].trim() };
+                    }
+                }
+
+                // End new SN
+                if (lower.startsWith('endnewsn:')) {
+                    this.consumeLine();
+                    return { type: 'endnewsn', filepath: stripped.substring(9).trim() };
+                }
+
+                // Signature
+                if (lower.startsWith('sign:')) {
+                    this.consumeLine();
+                    return { type: 'signature', signature: stripped.substring(5).trim() };
+                }
+
+                // Close
+                if (lower === 'close:') {
+                    this.consumeLine();
+                    return { type: 'close' };
+                }
+
+                // Unknown - treat as plain text
+                this.consumeLine();
+                return { type: 'unknown', text: line };
+            }
+
+            parseList(firstLine) {
+                const match = firstLine.match(/olist:(bullet|numbers)/i);
+                if (!match) {
+                    return { type: 'unknown', text: firstLine };
+                }
+
+                const listType = match[1].toLowerCase();
+                this.consumeLine();
+
+                const items = [];
+                while (this.hasMore()) {
+                    const line = this.peekLine();
+
+                    if (this.isBlank(line)) {
+                        break;
+                    }
+                    if (this.isComment(line)) {
+                        this.consumeLine();
+                        continue;
+                    }
+
+                    if (this.looksLikeCommand(line)) {
+                        break;
+                    }
+
+                    this.consumeLine();
+                    items.push(line.trim());
+                }
+
+                return { type: 'list', listType, items };
+            }
+
+            parseCodeBlock() {
+                this.consumeLine(); // consume 'code:'
+
+                const codeLines = [];
+                while (this.hasMore()) {
+                    const line = this.peekLine();
+
+                    if (line.trim().toLowerCase() === 'endcode:') {
+                        this.consumeLine();
+                        break;
+                    }
+
+                    this.consumeLine();
+                    codeLines.push(line);
+                }
+
+                return { type: 'code', code: codeLines.join('\n') };
+            }
+
+            parseImage(content) {
+                if (content.includes('|')) {
+                    const parts = content.split('|', 2);
+                    return { type: 'image', path: parts[0].trim(), alt: parts[1].trim() };
+                }
+                return { type: 'image', path: content.trim(), alt: '' };
+            }
+
+            parseLinkText(content) {
+                if (content.includes('|')) {
+                    const parts = content.split('|', 2);
+                    return { type: 'linktext', text: parts[0].trim(), url: parts[1].trim() };
+                }
+                if (content.includes(':')) {
+                    const parts = content.split(':', 2);
+                    return { type: 'linktext', text: parts[0].trim(), url: parts[1].trim() };
+                }
+                return { type: 'linktext', text: content, url: content };
+            }
+
+            looksLikeCommand(line) {
+                const lower = line.trim().toLowerCase();
+                const commands = [
+                    'title:', 'sec:', 'sec=', 'para:', 'break-line',
+                    'olist:', 'code:', 'img:=', 'link:', 'linktxt:',
+                    'opensn=', 'endnewsn:', 'sign:', 'close:', 'meta:'
+                ];
+                return commands.some(cmd => lower.startsWith(cmd));
+            }
+        }
+
+        // HTML Renderer
+        class HTMLRenderer {
+            render(doc) {
+                let html = '';
+
+                // Metadata panel
+                if (doc.metadata.length > 0) {
+                    html += '<div class="metadata-panel">';
+                    html += '<h4>📋 Document Metadata</h4>';
+                    doc.metadata.forEach(meta => {
+                        html += `<div class="metadata-item">${this.escapeHtml(meta.content)}</div>`;
+                    });
+                    html += '</div>';
+                }
+
+                // Content
+                html += '<div class="sn-content">';
+                
+                let hasSignature = false;
+                let isClosed = false;
+
+                doc.nodes.forEach(node => {
+                    html += this.renderNode(node);
+                    if (node.type === 'signature') hasSignature = true;
+                    if (node.type === 'close') isClosed = true;
+                });
+
+                html += '</div>';
+
+                // Seal indicator
+                if (hasSignature && isClosed) {
+                    html += '<div class="sn-seal">🔒 Document sealed and signed</div>';
+                }
+
+                return html;
+            }
+
+            renderNode(node) {
+                switch (node.type) {
+                    case 'title':
+                        return `<h1 class="sn-title">${this.formatInline(node.text)}</h1>`;
+
+                    case 'section':
+                        return `<h2 id="${this.escapeHtml(node.id)}" class="sn-section">${this.escapeHtml(node.id)}</h2>`;
+
+                    case 'section-link':
+                        return `<p><a href="#${this.escapeHtml(node.id)}">${this.formatInline(node.text)}</a></p>`;
+
+                    case 'para':
+                        return `<p class="sn-para">${this.formatInline(node.text)}</p>`;
+
+                    case 'break':
+                        return '<hr class="sn-break">';
+
+                    case 'list':
+                        const tag = node.listType === 'numbers' ? 'ol' : 'ul';
+                        let listHtml = `<${tag} class="sn-list">`;
+                        node.items.forEach(item => {
+                            listHtml += `<li>${this.formatInline(item)}</li>`;
+                        });
+                        listHtml += `</${tag}>`;
+                        return listHtml;
+
+                    case 'code':
+                        return `<pre class="sn-code"><code>${this.escapeHtml(node.code)}</code></pre>`;
+
+                    case 'image':
+                        return `<img src="${this.escapeHtml(node.path)}" alt="${this.escapeHtml(node.alt)}" class="sn-image">`;
+
+                    case 'link':
+                        return `<p><a href="${this.escapeHtml(node.url)}" class="sn-link" target="_blank">${this.escapeHtml(node.url)}</a></p>`;
+
+                    case 'linktext':
+                        return `<p><a href="${this.escapeHtml(node.url)}" class="sn-link" target="_blank">${this.formatInline(node.text)}</a></p>`;
+
+                    case 'opensn':
+                        return `<p><a href="${this.escapeHtml(node.location)}" class="sn-opensn">${this.formatInline(node.text)}</a></p>`;
+
+                    case 'endnewsn':
+                        return `<div class="sn-next"><a href="${this.escapeHtml(node.filepath)}">Next: ${this.escapeHtml(node.filepath)} →</a></div>`;
+
+                    case 'unknown':
+                        return `<p class="sn-unknown">${this.escapeHtml(node.text)}</p>`;
+
+                    case 'signature':
+                    case 'close':
+                        return ''; // Handled separately
+
+                    default:
+                        return '';
+                }
+            }
+
+            formatInline(text) {
+                let result = this.escapeHtml(text);
+
+                // Handle escaped braces
+                result = result.replace(/\{\{/g, '\x00LEFTBRACE\x00');
+                result = result.replace(/\}\}/g, '\x00RIGHTBRACE\x00');
+
+                // Bold
+                result = result.replace(/\{b:(.*?)\}/gi, '<strong>$1</strong>');
+                result = result.replace(/\{bold:(.*?)\}/gi, '<strong>$1</strong>');
+
+                // Italic
+                result = result.replace(/\{i:(.*?)\}/gi, '<em>$1</em>');
+                result = result.replace(/\{italic:(.*?)\}/gi, '<em>$1</em>');
+
+                // Underline
+                result = result.replace(/\{u:(.*?)\}/gi, '<u>$1</u>');
+
+                // Color
+                result = result.replace(/\{color=([^:]+):(.*?)\}/gi, (match, color, text) => {
+                    return `<span style="color: ${this.escapeHtml(color)}">${text}</span>`;
+                });
+
+                // Restore escaped braces
+                result = result.replace(/\x00LEFTBRACE\x00/g, '{');
+                result = result.replace(/\x00RIGHTBRACE\x00/g, '}');
+
+                return result;
+            }
+
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+        }
+
+        // UI Functions
+        const parser = new SNParser();
+        const renderer = new HTMLRenderer();
+
+        function showStatus(message, type = 'info') {
+            const panel = document.getElementById('documentPanel');
+            panel.innerHTML = `<div class="status-message ${type}">${message}</div>`;
+        }
+
+        function showLoading() {
+            const panel = document.getElementById('documentPanel');
+            panel.innerHTML = '<div class="loading">Loading document...</div>';
+        }
+
+        function renderDocument(content) {
+            try {
+                showLoading();
+
+                setTimeout(() => {
+                    try {
+                        const doc = parser.parse(content);
+                        const html = renderer.render(doc);
+
+                        const panel = document.getElementById('documentPanel');
+                        panel.innerHTML = html;
+
+                        // Smooth scroll to top
+                        panel.scrollIntoView({ behavior: 'smooth' });
+                    } catch (error) {
+                        showStatus(`<strong>Parse Error:</strong> ${error.message}`, 'error');
+                    }
+                }, 100);
+
+            } catch (error) {
+                showStatus(`<strong>Error:</strong> ${error.message}`, 'error');
+            }
+        }
+
+        // File upload handler
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const label = document.getElementById('fileLabel');
+            label.textContent = file.name;
+
+            if (!file.name.endsWith('.sn')) {
+                showStatus('<strong>Warning:</strong> Selected file does not have .sn extension. It may not be a valid Super Notation file.', 'warning');
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                renderDocument(e.target.result);
+            };
+            reader.onerror = function() {
+                showStatus('<strong>Error:</strong> Failed to read file.', 'error');
+            };
+            reader.readAsText(file);
+        });
+
+        // URL loading
+        async function loadFromUrl() {
+            const urlInput = document.getElementById('urlInput');
+            const url = urlInput.value.trim();
+
+            if (!url) {
+                showStatus('<strong>Error:</strong> Please enter a URL.', 'error');
+                return;
+            }
+
+            try {
+                showLoading();
+
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const content = await response.text();
+                renderDocument(content);
+
+            } catch (error) {
+                showStatus(`<strong>Error loading URL:</strong> ${error.message}<br><br>Note: Due to CORS restrictions, you may only be able to load files from the same domain or servers that allow cross-origin requests.`, 'error');
+            }
+        }
+
+        // Allow Enter key to load URL
+        document.getElementById('urlInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                loadFromUrl();
+            }
+        });
+    </script>
+</body>
+</html>

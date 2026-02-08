@@ -1,0 +1,42 @@
+<super-notation-v1>
+
+meta: author=Technical Writing Team
+meta: version=2.1
+meta: document=Configuration Guide
+
+title: Configuration Guide - Part 2
+
+sec:introduction
+para: Now that you've installed the software, let's configure it for first use.
+
+sec:initial-setup
+para: Run the configuration wizard:
+
+code:
+installer config --interactive
+endcode:
+
+sec:settings
+para: The following settings can be customized:
+
+olist:bullet
+Default language and locale
+Theme (light or dark mode)
+Automatic updates preference
+Privacy and telemetry options
+
+sec:advanced
+para: For advanced users, edit the configuration file directly at:
+
+para: {b:Windows:} C:\Program Files\App\config.ini
+
+para: {b:macOS:} ~/Library/Application Support/App/config.ini
+
+sec:troubleshooting
+para: If you encounter issues, check our sec=introduction: troubleshooting section or visit:
+
+linktxt: Support Portal | https://example.com/support
+
+break-line
+
+para: Installation complete! Enjoy using the software.

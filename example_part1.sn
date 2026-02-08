@@ -1,0 +1,55 @@
+<super-notation-v1>
+
+meta: author=Technical Writing Team
+meta: version=2.1
+meta: document=Installation Guide
+
+title: Installation Guide - Part 1
+
+sec:overview
+para: This guide covers the installation process for our software product.
+
+sec:requirements
+para: Before installing, ensure your system meets these requirements:
+
+olist:bullet
+Operating System: Windows 10+ or macOS 10.15+
+RAM: Minimum 4GB (8GB recommended)
+Disk Space: 500MB free space
+Internet connection for downloading components
+
+sec:download
+para: Download the installer from our official website:
+
+link: https://example.com/downloads
+
+para: Choose the version appropriate for your operating system.
+
+sec:installation-steps
+para: Follow these steps to install:
+
+olist:numbers
+Run the downloaded installer
+Accept the license agreement
+Choose installation directory
+Click Install and wait for completion
+Restart your computer if prompted
+
+sec:verification
+para: To verify the installation was successful:
+
+code:
+# Windows
+installer --version
+
+# macOS/Linux
+./installer --version
+endcode:
+
+para: You should see version 2.1.0 or higher.
+
+break-line
+
+para: Continue to Part 2 for configuration instructions.
+
+endnewsn: example_part2.sn

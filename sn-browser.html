@@ -65,15 +65,6 @@
             gap: 10px;
         }
 
-        .input-section h3::before {
-            content: "📄";
-            font-size: 1.3em;
-        }
-
-        .input-section:nth-child(2) h3::before {
-            content: "🔗";
-        }
-
         .file-input-wrapper {
             position: relative;
             display: inline-block;
@@ -160,13 +151,8 @@
             background: #e0e0e0;
         }
 
-        .divider::before {
-            left: 0;
-        }
-
-        .divider::after {
-            right: 0;
-        }
+        .divider::before { left: 0; }
+        .divider::after { right: 0; }
 
         .document-panel {
             background: white;
@@ -176,43 +162,34 @@
             min-height: 400px;
         }
 
-        .document-panel.hidden {
-            display: none;
-        }
-
         .status-message {
             padding: 15px 20px;
             border-radius: 8px;
             margin-bottom: 20px;
-            display: none;
         }
 
         .status-message.info {
             background: #e3f2fd;
             color: #1976d2;
             border-left: 4px solid #1976d2;
-            display: block;
         }
 
         .status-message.success {
             background: #e8f5e9;
             color: #388e3c;
             border-left: 4px solid #388e3c;
-            display: block;
         }
 
         .status-message.error {
             background: #ffebee;
             color: #c62828;
             border-left: 4px solid #c62828;
-            display: block;
         }
 
         .status-message.warning {
             background: #fff3e0;
             color: #f57c00;
             border-left: 4px solid #f57c00;
-            display: block;
         }
 
         /* Rendered SN Content Styles */
@@ -239,7 +216,6 @@
 
         .sn-para {
             margin: 1.2em 0;
-            text-align: justify;
             color: #333;
             font-size: 1.05em;
         }
@@ -355,6 +331,7 @@
             text-align: center;
             padding: 40px;
             color: #999;
+            font-size: 1.2em;
         }
 
         .loading::before {
@@ -362,6 +339,29 @@
             font-size: 3em;
             display: block;
             margin-bottom: 15px;
+        }
+
+        .welcome {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .welcome::before {
+            content: "📖";
+            font-size: 4em;
+            display: block;
+            margin-bottom: 20px;
+        }
+
+        .welcome h2 {
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .welcome p {
+            font-size: 1.1em;
+            line-height: 1.6;
         }
 
         @media (max-width: 768px) {
@@ -389,460 +389,373 @@
 
         <div class="input-panel">
             <div class="input-section">
-                <h3>Upload SN File</h3>
+                <h3>📄 Upload SN File</h3>
                 <div class="file-input-wrapper">
                     <label for="fileInput" class="file-input-label">
                         <span>📁</span>
                         <span id="fileLabel">Choose File</span>
                     </label>
-                    <input type="file" id="fileInput" accept=".sn">
+                    <input type="file" id="fileInput" accept=".sn,text/plain">
                 </div>
             </div>
 
             <div class="divider">OR</div>
 
             <div class="input-section">
-                <h3>Load from URL</h3>
+                <h3>🔗 Load from URL</h3>
                 <div class="url-input-group">
-                    <input type="text" id="urlInput" placeholder="Enter URL to .sn file...">
+                    <input type="text" id="urlInput" placeholder="https://example.com/document.sn">
                     <button onclick="loadFromUrl()">Load</button>
                 </div>
             </div>
         </div>
 
         <div class="document-panel" id="documentPanel">
-            <div class="status-message info">
-                <strong>Welcome!</strong> Upload an SN file or enter a URL to get started.
+            <div class="welcome">
+                <h2>Welcome to Super Notation Browser</h2>
+                <p>Upload a .sn file or load from a URL to view your documentation.</p>
             </div>
         </div>
     </div>
 
     <script>
-        // SN Parser in JavaScript
-        class SNParser {
-            constructor() {
-                this.lines = [];
-                this.currentLine = 0;
-                this.metadata = [];
-                this.nodes = [];
+        // Simple SN Parser
+        function parseSN(content) {
+            const lines = content.split('\n');
+            const nodes = [];
+            const metadata = [];
+            let i = 0;
+            let inCodeBlock = false;
+            let codeContent = [];
+            let inList = false;
+            let listItems = [];
+            let listType = 'bullet';
+
+            // Skip to declaration
+            while (i < lines.length && !lines[i].trim().match(/^<super-notation-v1>/i)) {
+                i++;
             }
+            i++; // Skip declaration line
 
-            parse(content) {
-                this.lines = content.split('\n');
-                this.currentLine = 0;
-                this.metadata = [];
-                this.nodes = [];
+            while (i < lines.length) {
+                const line = lines[i];
+                const trimmed = line.trim();
 
-                // Parse header
-                if (!this.parseHeader()) {
-                    throw new Error('Missing or invalid <super-notation-v1> header');
-                }
-
-                // Parse metadata
-                this.metadata = this.parseMetadata();
-
-                // Parse body
-                while (this.hasMore()) {
-                    const node = this.parseNode();
-                    if (node) {
-                        this.nodes.push(node);
-                    }
-                }
-
-                return {
-                    metadata: this.metadata,
-                    nodes: this.nodes
-                };
-            }
-
-            hasMore() {
-                return this.currentLine < this.lines.length;
-            }
-
-            peekLine() {
-                if (this.currentLine < this.lines.length) {
-                    return this.lines[this.currentLine];
-                }
-                return null;
-            }
-
-            consumeLine() {
-                const line = this.peekLine();
-                if (line !== null) {
-                    this.currentLine++;
-                }
-                return line;
-            }
-
-            isComment(line) {
-                return line.trim().startsWith('#');
-            }
-
-            isBlank(line) {
-                return line.trim() === '';
-            }
-
-            parseHeader() {
-                while (this.hasMore()) {
-                    const line = this.peekLine();
-                    if (this.isBlank(line) || this.isComment(line)) {
-                        this.consumeLine();
-                        continue;
-                    }
-
-                    if (line.trim() === '<super-notation-v1>') {
-                        this.consumeLine();
-                        return true;
+                // Handle code block
+                if (inCodeBlock) {
+                    if (trimmed.toLowerCase() === 'endcode:') {
+                        nodes.push({ type: 'code', code: codeContent.join('\n') });
+                        codeContent = [];
+                        inCodeBlock = false;
                     } else {
-                        return false;
+                        codeContent.push(line);
                     }
-                }
-                return false;
-            }
-
-            parseMetadata() {
-                const metadata = [];
-                while (this.hasMore()) {
-                    const line = this.peekLine();
-                    
-                    if (this.isBlank(line) || this.isComment(line)) {
-                        this.consumeLine();
-                        continue;
-                    }
-
-                    const stripped = line.trim();
-                    if (stripped.toLowerCase().startsWith('meta:')) {
-                        this.consumeLine();
-                        const content = stripped.substring(5).trim();
-                        metadata.push({ type: 'meta', content });
-                    } else {
-                        break;
-                    }
-                }
-                return metadata;
-            }
-
-            parseNode() {
-                const line = this.peekLine();
-
-                if (!line) return null;
-
-                if (this.isBlank(line) || this.isComment(line)) {
-                    this.consumeLine();
-                    return null;
+                    i++;
+                    continue;
                 }
 
-                const stripped = line.trim();
-                const lower = stripped.toLowerCase();
+                // Start code block
+                if (trimmed.toLowerCase() === 'code:') {
+                    if (inList) {
+                        nodes.push({ type: 'list', listType, items: [...listItems] });
+                        listItems = [];
+                        inList = false;
+                    }
+                    inCodeBlock = true;
+                    i++;
+                    continue;
+                }
+
+                // Handle list end
+                if (inList && (trimmed === '' || trimmed.match(/^[a-z]+:/i))) {
+                    nodes.push({ type: 'list', listType, items: [...listItems] });
+                    listItems = [];
+                    inList = false;
+                }
+
+                // Comments and blank lines
+                if (trimmed.startsWith('#') || trimmed === '') {
+                    i++;
+                    continue;
+                }
+
+                // Metadata
+                if (trimmed.toLowerCase().startsWith('meta:')) {
+                    metadata.push(trimmed.substring(5).trim());
+                    i++;
+                    continue;
+                }
 
                 // Title
-                if (lower.startsWith('title:')) {
-                    this.consumeLine();
-                    return { type: 'title', text: stripped.substring(6).trim() };
+                if (trimmed.toLowerCase().startsWith('title:')) {
+                    nodes.push({ type: 'title', text: trimmed.substring(6).trim() });
+                    i++;
+                    continue;
                 }
 
-                // Section definition
-                if (lower.startsWith('sec:') && !stripped.includes('=')) {
-                    this.consumeLine();
-                    return { type: 'section', id: stripped.substring(4).trim() };
+                // Section
+                if (trimmed.toLowerCase().startsWith('sec:') && !trimmed.includes('=')) {
+                    const id = trimmed.substring(4).trim();
+                    nodes.push({ type: 'section', id });
+                    i++;
+                    continue;
                 }
 
                 // Section link
-                if (lower.startsWith('sec=')) {
-                    this.consumeLine();
-                    const match = stripped.match(/sec=([^:]+):\s*(.*)/i);
+                if (trimmed.match(/^sec=/i)) {
+                    const match = trimmed.match(/^sec=([^:]+):\s*(.+)$/i);
                     if (match) {
-                        return { type: 'section-link', id: match[1].trim(), text: match[2].trim() };
+                        nodes.push({ type: 'section-link', id: match[1], text: match[2] });
                     }
+                    i++;
+                    continue;
                 }
 
                 // Paragraph
-                if (lower.startsWith('para:')) {
-                    this.consumeLine();
-                    return { type: 'para', text: stripped.substring(5).trim() };
+                if (trimmed.toLowerCase().startsWith('para:')) {
+                    nodes.push({ type: 'para', text: trimmed.substring(5).trim() });
+                    i++;
+                    continue;
                 }
 
-                // Break line
-                if (lower === 'break-line' || lower === 'break-line:') {
-                    this.consumeLine();
-                    return { type: 'break' };
+                // Break
+                if (trimmed.toLowerCase().match(/^break-line/)) {
+                    nodes.push({ type: 'break' });
+                    i++;
+                    continue;
                 }
 
-                // List
-                if (lower.startsWith('olist:')) {
-                    return this.parseList(stripped);
+                // List start
+                if (trimmed.toLowerCase().match(/^olist:(bullet|numbers)/)) {
+                    inList = true;
+                    listType = trimmed.toLowerCase().includes('numbers') ? 'numbers' : 'bullet';
+                    i++;
+                    continue;
                 }
 
-                // Code block
-                if (lower === 'code:') {
-                    return this.parseCodeBlock();
+                // List items
+                if (inList && trimmed !== '') {
+                    listItems.push(trimmed);
+                    i++;
+                    continue;
                 }
 
                 // Image
-                if (lower.startsWith('img:=')) {
-                    this.consumeLine();
-                    return this.parseImage(stripped.substring(5));
+                if (trimmed.toLowerCase().startsWith('img:=')) {
+                    const content = trimmed.substring(5).trim();
+                    const parts = content.split('|');
+                    nodes.push({ 
+                        type: 'image', 
+                        path: parts[0].trim(), 
+                        alt: parts[1] ? parts[1].trim() : '' 
+                    });
+                    i++;
+                    continue;
                 }
 
-                // Links
-                if (lower.startsWith('link:')) {
-                    this.consumeLine();
-                    return { type: 'link', url: stripped.substring(5).trim() };
+                // Link
+                if (trimmed.toLowerCase().startsWith('link:')) {
+                    nodes.push({ type: 'link', url: trimmed.substring(5).trim() });
+                    i++;
+                    continue;
                 }
 
-                if (lower.startsWith('linktxt:')) {
-                    this.consumeLine();
-                    return this.parseLinkText(stripped.substring(8));
-                }
-
-                // Cross-file navigation
-                if (lower.startsWith('opensn=')) {
-                    this.consumeLine();
-                    const match = stripped.match(/opensn=([^:]+):\s*(.*)/i);
-                    if (match) {
-                        return { type: 'opensn', location: match[1].trim(), text: match[2].trim() };
+                // Link with text
+                if (trimmed.toLowerCase().startsWith('linktxt:')) {
+                    const content = trimmed.substring(8).trim();
+                    const parts = content.includes('|') ? content.split('|') : content.split(':');
+                    if (parts.length >= 2) {
+                        nodes.push({ 
+                            type: 'linktext', 
+                            text: parts[0].trim(), 
+                            url: parts[1].trim() 
+                        });
                     }
+                    i++;
+                    continue;
+                }
+
+                // Open SN
+                if (trimmed.match(/^opensn=/i)) {
+                    const match = trimmed.match(/^opensn=([^:]+):\s*(.+)$/i);
+                    if (match) {
+                        nodes.push({ 
+                            type: 'opensn', 
+                            location: match[1].trim(), 
+                            text: match[2].trim() 
+                        });
+                    }
+                    i++;
+                    continue;
                 }
 
                 // End new SN
-                if (lower.startsWith('endnewsn:')) {
-                    this.consumeLine();
-                    return { type: 'endnewsn', filepath: stripped.substring(9).trim() };
+                if (trimmed.toLowerCase().startsWith('endnewsn:')) {
+                    nodes.push({ 
+                        type: 'endnewsn', 
+                        filepath: trimmed.substring(9).trim() 
+                    });
+                    i++;
+                    continue;
                 }
 
-                // Signature
-                if (lower.startsWith('sign:')) {
-                    this.consumeLine();
-                    return { type: 'signature', signature: stripped.substring(5).trim() };
+                // Sign
+                if (trimmed.toLowerCase().startsWith('sign:')) {
+                    nodes.push({ type: 'signature', sig: trimmed.substring(5).trim() });
+                    i++;
+                    continue;
                 }
 
                 // Close
-                if (lower === 'close:') {
-                    this.consumeLine();
-                    return { type: 'close' };
+                if (trimmed.toLowerCase() === 'close:') {
+                    nodes.push({ type: 'close' });
+                    i++;
+                    continue;
                 }
 
-                // Unknown - treat as plain text
-                this.consumeLine();
-                return { type: 'unknown', text: line };
+                i++;
             }
 
-            parseList(firstLine) {
-                const match = firstLine.match(/olist:(bullet|numbers)/i);
-                if (!match) {
-                    return { type: 'unknown', text: firstLine };
-                }
-
-                const listType = match[1].toLowerCase();
-                this.consumeLine();
-
-                const items = [];
-                while (this.hasMore()) {
-                    const line = this.peekLine();
-
-                    if (this.isBlank(line)) {
-                        break;
-                    }
-                    if (this.isComment(line)) {
-                        this.consumeLine();
-                        continue;
-                    }
-
-                    if (this.looksLikeCommand(line)) {
-                        break;
-                    }
-
-                    this.consumeLine();
-                    items.push(line.trim());
-                }
-
-                return { type: 'list', listType, items };
+            // Handle any remaining list
+            if (inList && listItems.length > 0) {
+                nodes.push({ type: 'list', listType, items: listItems });
             }
 
-            parseCodeBlock() {
-                this.consumeLine(); // consume 'code:'
-
-                const codeLines = [];
-                while (this.hasMore()) {
-                    const line = this.peekLine();
-
-                    if (line.trim().toLowerCase() === 'endcode:') {
-                        this.consumeLine();
-                        break;
-                    }
-
-                    this.consumeLine();
-                    codeLines.push(line);
-                }
-
-                return { type: 'code', code: codeLines.join('\n') };
-            }
-
-            parseImage(content) {
-                if (content.includes('|')) {
-                    const parts = content.split('|', 2);
-                    return { type: 'image', path: parts[0].trim(), alt: parts[1].trim() };
-                }
-                return { type: 'image', path: content.trim(), alt: '' };
-            }
-
-            parseLinkText(content) {
-                if (content.includes('|')) {
-                    const parts = content.split('|', 2);
-                    return { type: 'linktext', text: parts[0].trim(), url: parts[1].trim() };
-                }
-                if (content.includes(':')) {
-                    const parts = content.split(':', 2);
-                    return { type: 'linktext', text: parts[0].trim(), url: parts[1].trim() };
-                }
-                return { type: 'linktext', text: content, url: content };
-            }
-
-            looksLikeCommand(line) {
-                const lower = line.trim().toLowerCase();
-                const commands = [
-                    'title:', 'sec:', 'sec=', 'para:', 'break-line',
-                    'olist:', 'code:', 'img:=', 'link:', 'linktxt:',
-                    'opensn=', 'endnewsn:', 'sign:', 'close:', 'meta:'
-                ];
-                return commands.some(cmd => lower.startsWith(cmd));
-            }
+            return { metadata, nodes };
         }
 
-        // HTML Renderer
-        class HTMLRenderer {
-            render(doc) {
-                let html = '';
+        // Format inline text
+        function formatInline(text) {
+            let result = escapeHtml(text);
 
-                // Metadata panel
-                if (doc.metadata.length > 0) {
-                    html += '<div class="metadata-panel">';
-                    html += '<h4>📋 Document Metadata</h4>';
-                    doc.metadata.forEach(meta => {
-                        html += `<div class="metadata-item">${this.escapeHtml(meta.content)}</div>`;
-                    });
-                    html += '</div>';
-                }
+            // Handle escaped braces
+            result = result.replace(/\{\{/g, '\x00LB\x00');
+            result = result.replace(/\}\}/g, '\x00RB\x00');
 
-                // Content
-                html += '<div class="sn-content">';
-                
-                let hasSignature = false;
-                let isClosed = false;
+            // Bold
+            result = result.replace(/\{b:(.*?)\}/gi, '<strong>$1</strong>');
+            result = result.replace(/\{bold:(.*?)\}/gi, '<strong>$1</strong>');
 
-                doc.nodes.forEach(node => {
-                    html += this.renderNode(node);
-                    if (node.type === 'signature') hasSignature = true;
-                    if (node.type === 'close') isClosed = true;
+            // Italic
+            result = result.replace(/\{i:(.*?)\}/gi, '<em>$1</em>');
+            result = result.replace(/\{italic:(.*?)\}/gi, '<em>$1</em>');
+
+            // Underline
+            result = result.replace(/\{u:(.*?)\}/gi, '<u>$1</u>');
+
+            // Color
+            result = result.replace(/\{color=([^:]+):(.*?)\}/gi, (match, color, text) => {
+                return `<span style="color: ${escapeHtml(color)}">${text}</span>`;
+            });
+
+            // Restore escaped braces
+            result = result.replace(/\x00LB\x00/g, '{');
+            result = result.replace(/\x00RB\x00/g, '}');
+
+            return result;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Render to HTML
+        function renderSN(doc) {
+            let html = '';
+
+            // Metadata
+            if (doc.metadata.length > 0) {
+                html += '<div class="metadata-panel">';
+                html += '<h4>📋 Document Metadata</h4>';
+                doc.metadata.forEach(meta => {
+                    html += `<div class="metadata-item">${escapeHtml(meta)}</div>`;
                 });
-
                 html += '</div>';
-
-                // Seal indicator
-                if (hasSignature && isClosed) {
-                    html += '<div class="sn-seal">🔒 Document sealed and signed</div>';
-                }
-
-                return html;
             }
 
-            renderNode(node) {
+            html += '<div class="sn-content">';
+
+            let hasSignature = false;
+            let isClosed = false;
+
+            doc.nodes.forEach(node => {
                 switch (node.type) {
                     case 'title':
-                        return `<h1 class="sn-title">${this.formatInline(node.text)}</h1>`;
+                        html += `<h1 class="sn-title">${formatInline(node.text)}</h1>`;
+                        break;
 
                     case 'section':
-                        return `<h2 id="${this.escapeHtml(node.id)}" class="sn-section">${this.escapeHtml(node.id)}</h2>`;
+                        html += `<h2 id="${escapeHtml(node.id)}" class="sn-section">${escapeHtml(node.id.replace(/-/g, ' ').replace(/_/g, ' '))}</h2>`;
+                        break;
 
                     case 'section-link':
-                        return `<p><a href="#${this.escapeHtml(node.id)}">${this.formatInline(node.text)}</a></p>`;
+                        html += `<p><a href="#${escapeHtml(node.id)}">${formatInline(node.text)}</a></p>`;
+                        break;
 
                     case 'para':
-                        return `<p class="sn-para">${this.formatInline(node.text)}</p>`;
+                        html += `<p class="sn-para">${formatInline(node.text)}</p>`;
+                        break;
 
                     case 'break':
-                        return '<hr class="sn-break">';
+                        html += '<hr class="sn-break">';
+                        break;
 
                     case 'list':
                         const tag = node.listType === 'numbers' ? 'ol' : 'ul';
-                        let listHtml = `<${tag} class="sn-list">`;
+                        html += `<${tag} class="sn-list">`;
                         node.items.forEach(item => {
-                            listHtml += `<li>${this.formatInline(item)}</li>`;
+                            html += `<li>${formatInline(item)}</li>`;
                         });
-                        listHtml += `</${tag}>`;
-                        return listHtml;
+                        html += `</${tag}>`;
+                        break;
 
                     case 'code':
-                        return `<pre class="sn-code"><code>${this.escapeHtml(node.code)}</code></pre>`;
+                        html += `<pre class="sn-code"><code>${escapeHtml(node.code)}</code></pre>`;
+                        break;
 
                     case 'image':
-                        return `<img src="${this.escapeHtml(node.path)}" alt="${this.escapeHtml(node.alt)}" class="sn-image">`;
+                        html += `<img src="${escapeHtml(node.path)}" alt="${escapeHtml(node.alt)}" class="sn-image">`;
+                        break;
 
                     case 'link':
-                        return `<p><a href="${this.escapeHtml(node.url)}" class="sn-link" target="_blank">${this.escapeHtml(node.url)}</a></p>`;
+                        html += `<p><a href="${escapeHtml(node.url)}" class="sn-link" target="_blank">${escapeHtml(node.url)}</a></p>`;
+                        break;
 
                     case 'linktext':
-                        return `<p><a href="${this.escapeHtml(node.url)}" class="sn-link" target="_blank">${this.formatInline(node.text)}</a></p>`;
+                        html += `<p><a href="${escapeHtml(node.url)}" class="sn-link" target="_blank">${formatInline(node.text)}</a></p>`;
+                        break;
 
                     case 'opensn':
-                        return `<p><a href="${this.escapeHtml(node.location)}" class="sn-opensn">${this.formatInline(node.text)}</a></p>`;
+                        html += `<p><a href="${escapeHtml(node.location)}" class="sn-opensn">${formatInline(node.text)}</a></p>`;
+                        break;
 
                     case 'endnewsn':
-                        return `<div class="sn-next"><a href="${this.escapeHtml(node.filepath)}">Next: ${this.escapeHtml(node.filepath)} →</a></div>`;
-
-                    case 'unknown':
-                        return `<p class="sn-unknown">${this.escapeHtml(node.text)}</p>`;
+                        html += `<div class="sn-next"><a href="${escapeHtml(node.filepath)}">Next: ${escapeHtml(node.filepath)} →</a></div>`;
+                        break;
 
                     case 'signature':
+                        hasSignature = true;
+                        break;
+
                     case 'close':
-                        return ''; // Handled separately
-
-                    default:
-                        return '';
+                        isClosed = true;
+                        break;
                 }
+            });
+
+            html += '</div>';
+
+            // Seal indicator
+            if (hasSignature && isClosed) {
+                html += '<div class="sn-seal">🔒 Document sealed and signed</div>';
             }
 
-            formatInline(text) {
-                let result = this.escapeHtml(text);
-
-                // Handle escaped braces
-                result = result.replace(/\{\{/g, '\x00LEFTBRACE\x00');
-                result = result.replace(/\}\}/g, '\x00RIGHTBRACE\x00');
-
-                // Bold
-                result = result.replace(/\{b:(.*?)\}/gi, '<strong>$1</strong>');
-                result = result.replace(/\{bold:(.*?)\}/gi, '<strong>$1</strong>');
-
-                // Italic
-                result = result.replace(/\{i:(.*?)\}/gi, '<em>$1</em>');
-                result = result.replace(/\{italic:(.*?)\}/gi, '<em>$1</em>');
-
-                // Underline
-                result = result.replace(/\{u:(.*?)\}/gi, '<u>$1</u>');
-
-                // Color
-                result = result.replace(/\{color=([^:]+):(.*?)\}/gi, (match, color, text) => {
-                    return `<span style="color: ${this.escapeHtml(color)}">${text}</span>`;
-                });
-
-                // Restore escaped braces
-                result = result.replace(/\x00LEFTBRACE\x00/g, '{');
-                result = result.replace(/\x00RIGHTBRACE\x00/g, '}');
-
-                return result;
-            }
-
-            escapeHtml(text) {
-                const div = document.createElement('div');
-                div.textContent = text;
-                return div.innerHTML;
-            }
+            return html;
         }
 
         // UI Functions
-        const parser = new SNParser();
-        const renderer = new HTMLRenderer();
-
         function showStatus(message, type = 'info') {
             const panel = document.getElementById('documentPanel');
             panel.innerHTML = `<div class="status-message ${type}">${message}</div>`;
@@ -859,8 +772,8 @@
 
                 setTimeout(() => {
                     try {
-                        const doc = parser.parse(content);
-                        const html = renderer.render(doc);
+                        const doc = parseSN(content);
+                        const html = renderSN(doc);
 
                         const panel = document.getElementById('documentPanel');
                         panel.innerHTML = html;

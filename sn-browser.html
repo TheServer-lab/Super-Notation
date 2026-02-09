@@ -606,6 +606,26 @@
                     continue;
                 }
 
+                // Background color
+                if (trimmed.toLowerCase().startsWith('bgcolor:')) {
+                    nodes.push({ 
+                        type: 'bgcolor', 
+                        color: trimmed.substring(8).trim() 
+                    });
+                    i++;
+                    continue;
+                }
+
+                // Text color
+                if (trimmed.toLowerCase().startsWith('txtcolor:')) {
+                    nodes.push({ 
+                        type: 'txtcolor', 
+                        color: trimmed.substring(9).trim() 
+                    });
+                    i++;
+                    continue;
+                }
+
                 // Close
                 if (trimmed.toLowerCase() === 'close:') {
                     nodes.push({ type: 'close' });
@@ -679,60 +699,84 @@
 
             let hasSignature = false;
             let isClosed = false;
+            let currentBgColor = null;
+            let currentTxtColor = null;
 
             doc.nodes.forEach(node => {
+                let nodeHtml = '';
+                let style = '';
+                
+                // Apply current colors if set
+                if (currentBgColor || currentTxtColor) {
+                    style = 'style="';
+                    if (currentBgColor) style += `background-color: ${currentBgColor};`;
+                    if (currentTxtColor) style += `color: ${currentTxtColor};`;
+                    style += ' padding: 15px; border-radius: 8px; margin: 10px 0;"';
+                }
+
                 switch (node.type) {
+                    case 'bgcolor':
+                        currentBgColor = node.color;
+                        return; // Don't add HTML for this node
+
+                    case 'txtcolor':
+                        currentTxtColor = node.color;
+                        return; // Don't add HTML for this node
+
                     case 'title':
-                        html += `<h1 class="sn-title">${formatInline(node.text)}</h1>`;
+                        nodeHtml = `<h1 class="sn-title" ${style}>${formatInline(node.text)}</h1>`;
                         break;
 
                     case 'section':
-                        html += `<h2 id="${escapeHtml(node.id)}" class="sn-section">${escapeHtml(node.id.replace(/-/g, ' ').replace(/_/g, ' '))}</h2>`;
+                        nodeHtml = `<h2 id="${escapeHtml(node.id)}" class="sn-section" ${style}>${escapeHtml(node.id.replace(/-/g, ' ').replace(/_/g, ' '))}</h2>`;
                         break;
 
                     case 'section-link':
-                        html += `<p><a href="#${escapeHtml(node.id)}">${formatInline(node.text)}</a></p>`;
+                        nodeHtml = `<p ${style}><a href="#${escapeHtml(node.id)}">${formatInline(node.text)}</a></p>`;
                         break;
 
                     case 'para':
-                        html += `<p class="sn-para">${formatInline(node.text)}</p>`;
+                        nodeHtml = `<p class="sn-para" ${style}>${formatInline(node.text)}</p>`;
                         break;
 
                     case 'break':
-                        html += '<hr class="sn-break">';
+                        nodeHtml = '<hr class="sn-break">';
+                        // Reset colors after break
+                        currentBgColor = null;
+                        currentTxtColor = null;
                         break;
 
                     case 'list':
                         const tag = node.listType === 'numbers' ? 'ol' : 'ul';
-                        html += `<${tag} class="sn-list">`;
+                        nodeHtml = `<${tag} class="sn-list" ${style}>`;
                         node.items.forEach(item => {
-                            html += `<li>${formatInline(item)}</li>`;
+                            nodeHtml += `<li>${formatInline(item)}</li>`;
                         });
-                        html += `</${tag}>`;
+                        nodeHtml += `</${tag}>`;
                         break;
 
                     case 'code':
-                        html += `<pre class="sn-code"><code>${escapeHtml(node.code)}</code></pre>`;
+                        nodeHtml = `<pre class="sn-code" ${style}><code>${escapeHtml(node.code)}</code></pre>`;
                         break;
 
                     case 'image':
-                        html += `<img src="${escapeHtml(node.path)}" alt="${escapeHtml(node.alt)}" class="sn-image">`;
+                        nodeHtml = `<img src="${escapeHtml(node.path)}" alt="${escapeHtml(node.alt)}" class="sn-image">`;
                         break;
 
                     case 'link':
-                        html += `<p><a href="${escapeHtml(node.url)}" class="sn-link" target="_blank">${escapeHtml(node.url)}</a></p>`;
+                        nodeHtml = `<p ${style}><a href="${escapeHtml(node.url)}" class="sn-link" target="_blank">${escapeHtml(node.url)}</a></p>`;
                         break;
 
                     case 'linktext':
-                        html += `<p><a href="${escapeHtml(node.url)}" class="sn-link" target="_blank">${formatInline(node.text)}</a></p>`;
+                        nodeHtml = `<p ${style}><a href="${escapeHtml(node.url)}" class="sn-link" target="_blank">${formatInline(node.text)}</a></p>`;
                         break;
 
                     case 'opensn':
-                        html += `<p><a href="${escapeHtml(node.location)}" class="sn-opensn">${formatInline(node.text)}</a></p>`;
+                        nodeHtml = `<p ${style}><a href="${escapeHtml(node.location)}" class="sn-opensn">${formatInline(node.text)}</a></p>`;
                         break;
 
                     case 'endnewsn':
-                        html += `<div class="sn-next"><a href="${escapeHtml(node.filepath)}">Next: ${escapeHtml(node.filepath)} →</a></div>`;
+                        nodeHtml = `<div class="sn-next"><a href="${escapeHtml(node.filepath)}">Next: ${escapeHtml(node.filepath)} →</a></div>`;
                         break;
 
                     case 'signature':
@@ -743,6 +787,8 @@
                         isClosed = true;
                         break;
                 }
+
+                html += nodeHtml;
             });
 
             html += '</div>';

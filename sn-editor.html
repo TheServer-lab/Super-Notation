@@ -376,6 +376,7 @@
     </div>
 
     <div class="toolbar">
+        <button class="toolbar-btn" onclick="insertCommand('declaration')">📄 Declaration</button>
         <button class="toolbar-btn" onclick="insertCommand('meta')">🏷️ Meta</button>
         <button class="toolbar-btn" onclick="insertCommand('title')">📌 Title</button>
         <button class="toolbar-btn" onclick="insertCommand('sec')">📑 Section</button>
@@ -405,6 +406,11 @@
                 <span style="font-weight: normal; font-size: 0.85em;">Type your SN document...</span>
             </div>
             <textarea id="editor" spellcheck="false" placeholder="Start typing your Super Notation document here...
+
+Every SN document must begin with:
+<super-notation-v1>
+
+Click the '📄 Declaration' button to insert it automatically!
 
 Example:
 <super-notation-v1>
@@ -734,6 +740,10 @@ para: Welcome to {b:Super Notation}!
             let cursorOffset = 0;
 
             switch(type) {
+                case 'declaration':
+                    insertion = '<super-notation-v1>\n\n';
+                    cursorOffset = insertion.length;
+                    break;
                 case 'meta':
                     insertion = 'meta: author=Your Name\n';
                     cursorOffset = insertion.length;
@@ -828,8 +838,8 @@ meta: date=${new Date().toISOString().split('T')[0]}
 
 title: Untitled Document
 
-sec:introduction
-para: Start writing your document here.
+sec:main
+para: Start writing your content here.
 
 `;
                     break;

@@ -390,6 +390,9 @@
         <button class="toolbar-btn" onclick="insertCommand('underline')">U</button>
         <button class="toolbar-btn" onclick="insertCommand('color')">🎨 Color</button>
         <div class="toolbar-separator"></div>
+        <button class="toolbar-btn" onclick="insertCommand('bgcolor')">🎨 BgColor</button>
+        <button class="toolbar-btn" onclick="insertCommand('txtcolor')">🖍️ TxtColor</button>
+        <div class="toolbar-separator"></div>
         <button class="toolbar-btn" onclick="insertCommand('link')">🔗 Link</button>
         <button class="toolbar-btn" onclick="insertCommand('image')">🖼️ Image</button>
         <button class="toolbar-btn" onclick="insertCommand('break')">─ Break</button>
@@ -516,6 +519,8 @@ para: Welcome to {b:Super Notation}!
             let inList = false;
             let listItems = [];
             let listType = 'bullet';
+            let currentBgColor = null;
+            let currentTxtColor = null;
 
             for (let line of lines) {
                 const trimmed = line.trim();
@@ -532,7 +537,14 @@ para: Welcome to {b:Super Notation}!
                 
                 if (trimmed === 'endcode:') {
                     inCodeBlock = false;
-                    html += `<pre>${escapeHtml(codeContent)}</pre>`;
+                    let style = '';
+                    if (currentBgColor || currentTxtColor) {
+                        style = ' style="';
+                        if (currentBgColor) style += `background-color: ${currentBgColor};`;
+                        if (currentTxtColor) style += `color: ${currentTxtColor};`;
+                        style += ' padding: 15px; border-radius: 8px; margin: 10px 0;"';
+                    }
+                    html += `<pre${style}>${escapeHtml(codeContent)}</pre>`;
                     codeContent = '';
                     continue;
                 }
@@ -544,7 +556,7 @@ para: Welcome to {b:Super Notation}!
 
                 // Handle list end
                 if (inList && (trimmed === '' || trimmed.includes(':'))) {
-                    html += renderList(listItems, listType);
+                    html += renderList(listItems, listType, currentBgColor, currentTxtColor);
                     inList = false;
                     listItems = [];
                 }
@@ -561,17 +573,38 @@ para: Welcome to {b:Super Notation}!
                 }
                 if (trimmed === 'close:') continue;
 
+                // Background color
+                if (trimmed.startsWith('bgcolor:')) {
+                    currentBgColor = trimmed.substring(8).trim();
+                    continue;
+                }
+
+                // Text color
+                if (trimmed.startsWith('txtcolor:')) {
+                    currentTxtColor = trimmed.substring(9).trim();
+                    continue;
+                }
+
+                // Build style attribute if colors are set
+                let styleAttr = '';
+                if (currentBgColor || currentTxtColor) {
+                    styleAttr = ' style="';
+                    if (currentBgColor) styleAttr += `background-color: ${currentBgColor};`;
+                    if (currentTxtColor) styleAttr += `color: ${currentTxtColor};`;
+                    styleAttr += ' padding: 15px; border-radius: 8px; margin: 10px 0;"';
+                }
+
                 // Title
                 if (trimmed.startsWith('title:')) {
                     const title = trimmed.substring(6).trim();
-                    html += `<h1>${processInline(title)}</h1>`;
+                    html += `<h1${styleAttr}>${processInline(title)}</h1>`;
                     continue;
                 }
 
                 // Section
                 if (trimmed.startsWith('sec:')) {
                     const secId = trimmed.substring(4).trim();
-                    html += `<h2 id="${secId}">${secId.replace(/-/g, ' ').replace(/_/g, ' ')}</h2>`;
+                    html += `<h2 id="${secId}"${styleAttr}>${secId.replace(/-/g, ' ').replace(/_/g, ' ')}</h2>`;
                     continue;
                 }
 
@@ -579,7 +612,7 @@ para: Welcome to {b:Super Notation}!
                 if (trimmed.match(/^sec=.+:/)) {
                     const match = trimmed.match(/^sec=(.+?):\s*(.+)$/);
                     if (match) {
-                        html += `<p><a href="#${match[1]}">${processInline(match[2])}</a></p>`;
+                        html += `<p${styleAttr}><a href="#${match[1]}">${processInline(match[2])}</a></p>`;
                     }
                     continue;
                 }
@@ -587,13 +620,15 @@ para: Welcome to {b:Super Notation}!
                 // Paragraph
                 if (trimmed.startsWith('para:')) {
                     const text = trimmed.substring(5).trim();
-                    html += `<p>${processInline(text)}</p>`;
+                    html += `<p${styleAttr}>${processInline(text)}</p>`;
                     continue;
                 }
 
-                // Break line
+                // Break line - reset colors
                 if (trimmed.startsWith('break-line')) {
                     html += '<hr>';
+                    currentBgColor = null;
+                    currentTxtColor = null;
                     continue;
                 }
 
@@ -614,7 +649,7 @@ para: Welcome to {b:Super Notation}!
                 // Link
                 if (trimmed.startsWith('link:')) {
                     const url = trimmed.substring(5).trim();
-                    html += `<p><a href="${url}" target="_blank">${url}</a></p>`;
+                    html += `<p${styleAttr}><a href="${url}" target="_blank">${url}</a></p>`;
                     continue;
                 }
 
@@ -623,7 +658,7 @@ para: Welcome to {b:Super Notation}!
                     const rest = trimmed.substring(8).trim();
                     const parts = rest.split('|').length > 1 ? rest.split('|') : rest.split(':');
                     if (parts.length === 2) {
-                        html += `<p><a href="${parts[1].trim()}" target="_blank">${processInline(parts[0].trim())}</a></p>`;
+                        html += `<p${styleAttr}><a href="${parts[1].trim()}" target="_blank">${processInline(parts[0].trim())}</a></p>`;
                     }
                     continue;
                 }
@@ -641,15 +676,22 @@ para: Welcome to {b:Super Notation}!
 
             // Handle any remaining list
             if (inList && listItems.length > 0) {
-                html += renderList(listItems, listType);
+                html += renderList(listItems, listType, currentBgColor, currentTxtColor);
             }
 
             return html || '<p style="text-align: center; color: #999; padding: 40px;">Start typing in the editor to see live preview...</p>';
         }
 
-        function renderList(items, type) {
+        function renderList(items, type, bgColor, txtColor) {
             const tag = type === 'numbers' ? 'ol' : 'ul';
-            let html = `<${tag}>`;
+            let style = '';
+            if (bgColor || txtColor) {
+                style = ' style="';
+                if (bgColor) style += `background-color: ${bgColor};`;
+                if (txtColor) style += `color: ${txtColor};`;
+                style += ' padding: 15px; border-radius: 8px; margin: 10px 0;"';
+            }
+            let html = `<${tag}${style}>`;
             for (let item of items) {
                 html += `<li>${processInline(item)}</li>`;
             }
@@ -735,6 +777,14 @@ para: Welcome to {b:Super Notation}!
                 case 'color':
                     insertion = '{color=#ff0000:colored text}';
                     cursorOffset = 14;
+                    break;
+                case 'bgcolor':
+                    insertion = 'bgcolor: #f0f0f0\n';
+                    cursorOffset = 9;
+                    break;
+                case 'txtcolor':
+                    insertion = 'txtcolor: #000000\n';
+                    cursorOffset = 10;
                     break;
                 case 'link':
                     insertion = 'link: https://example.com\n';
